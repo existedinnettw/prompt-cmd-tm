@@ -1,0 +1,8 @@
+/.gemini
+.env
+/*.md
+!/README.md
+!/CHANGELOG.md
+/*.json
+/*.txt
+

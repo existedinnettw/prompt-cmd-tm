@@ -1,0 +1,37 @@
+# Result from this files is quite slow.
+# TODO: Data retrieving from dedicated tool, so that LLM won't need to read incoming data.
+
+description = "Get messages in a discord channel from a date to another date in JSON file"
+
+prompt = """
+# Task: Get messages from a Discord channel
+
+**The user's raw command is appended below your instructions.**
+
+1. Your task is to parse the `<channel_id>`, `<start_date>`, and `<end_date>` from their input.
+2. And then retrieve all messages from the specified Discord channel that were sent between the two dates (inclusive).
+3. Finally, output the messages in JSON file.
+
+## Expected Format
+
+The command follows this format: `/dc:msg_from <channel_id> <start_date> <end_date>`,
+e.g. `/dc:msg_from 123456789012345678 2023-01-01 2023-01-31`, `/dc:msg_from 123456789012345678 0101 0131`...
+
+Where:
+
+- `<end_date>`: If user omits this, assuming it as today's date, may get from !{date}.
+- `<start_date>`: If user omits this, assuming it as 7 days before `<end_date>`.
+
+## Output
+
+* Output the messages in JSON array file.
+* File name should be `discord-{channel_id}-{start_date}-{end_date}.json`
+  * e.g. `discord-123456789012345678-20230101-20230131.json`
+* Try keep original message content (do not further process data).
+
+## Technique
+
+* <= 100 messages per Discord API call.
+* May multiple calls to fetch all messages in range if more than 100.
+
+"""
