@@ -1,0 +1,9 @@
+{
+    "servers": {
+        "prompt-cmd-tm": {
+			"command": "{workspaceRoot}/bin/prompt_cmd_tm.exe",
+			"args": [
+			]
+		}
+	}
+}
