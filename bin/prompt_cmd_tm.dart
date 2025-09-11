@@ -17,7 +17,7 @@ base class PersonWeekReportServer extends MCPServer with PromptsSupport {
           version: '1.0.0',
         ),
         instructions:
-            'Use the person_week_report prompt to generate weekly reports from messages.',
+            'Use the person_week_report prompt to generate weekly reports from a log file.',
       ) {
     // Add the prompt
     addPrompt(personWeekReportPrompt, _generateWeekReportPrompt);
@@ -25,16 +25,16 @@ base class PersonWeekReportServer extends MCPServer with PromptsSupport {
 
   /// The prompt implementation
   GetPromptResult _generateWeekReportPrompt(GetPromptRequest request) {
-    final messages = request.arguments?['messages'] as String?;
+    final filePath = request.arguments?['file_path'] as String?;
     final userName = request.arguments?['user_name'] as String? ?? 'User';
 
-    if (messages == null) {
+    if (filePath == null) {
       return GetPromptResult(
         description: 'Weekly report generation',
         messages: [
           PromptMessage(
             role: Role.user,
-            content: TextContent(text: 'Error: No messages provided'),
+            content: TextContent(text: 'Error: No file path provided'),
           ),
         ],
       );
@@ -45,6 +45,7 @@ base class PersonWeekReportServer extends MCPServer with PromptsSupport {
 
     // Replace placeholders in the prompt
     final customizedPrompt = promptText
+        .replaceAll('{file_path}', filePath)
         .replaceAll('{user_name}', userName)
         .replaceAll('{YYYYMMDD}', _getCurrentDate());
 
@@ -53,9 +54,7 @@ base class PersonWeekReportServer extends MCPServer with PromptsSupport {
       messages: [
         PromptMessage(
           role: Role.user,
-          content: TextContent(
-            text: '$customizedPrompt\n\nMessages:\n$messages',
-          ),
+          content: TextContent(text: customizedPrompt),
         ),
       ],
     );
@@ -65,10 +64,11 @@ base class PersonWeekReportServer extends MCPServer with PromptsSupport {
     return """
 # Task: Generate a personal weekly report
 
-1. There are messages in context. 
+1. There are messages in log file, `{file_path}`. 
   * Some of them are commit messages from remote git webhooks, some are personal notes or thoughts.
-2. For any non-markdown context, please convert them to markdown format with `markitdown` (MCP) tool first.
-3. Please summarize them into a weekly report in zh-TW(繁體中文) and markdown. 
+2. If `{file_path}` is not markdown file, please convert it to markdown file with `markitdown` (MCP) tool first.
+3. Please read the markdown log file, then summarize them into a weekly report in zh-TW(繁體中文) and markdown.
+  * Even messages are in English, the report should convert them to zh-TW(繁體中文). 
 4. Finally save to a file named `{user_name}工作報告-{YYYYMMDD}.draft.md`
   * e.g. `吳名氏工作報告-20250828.draft.md`
   * `YYYYMMDD` is the date of the last message in context.
@@ -86,7 +86,6 @@ Following is a sample of formatted report.
 * iMotion-3dof
   1. Improve puppemon
      1. Puppemon 新增 subscribe executor server state 功能。
-     
      2. Puppemon_py_script 新增 確定達到 等待點的功能。
 * <other project>
   1. <task>
@@ -158,8 +157,8 @@ Following are project running or holding and its relevant keywords, which may he
     description: 'Generate a personal weekly report based on messages',
     arguments: [
       PromptArgument(
-        name: 'messages',
-        description: 'The messages to analyze for the weekly report',
+        name: 'file_path',
+        description: 'A log file to generate the report from',
         required: true,
       ),
       PromptArgument(

@@ -1,8 +1,14 @@
 {
     "servers": {
-        "prompt-cmd-tm": {
-			"command": "{workspaceRoot}/bin/prompt_cmd_tm.exe",
+        "prompt-tm": {
+			"command": "${workspaceFolder}/bin/prompt_cmd_tm.exe",
 			"args": [
+			]
+		},
+		"markitdown": {
+			"command": "uvx",
+			"args": [
+				"markitdown-mcp"
 			]
 		}
 	}
